@@ -12,7 +12,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
 
-# You should have received a copy of the GNU Affero General Public License
+# You should have received a copy of the GNU Affero General Public Licensefoo/blo/baz
 # along with Tozti.  If not, see <http://www.gnu.org/licenses/>.
 
 
@@ -31,7 +31,7 @@ from tozti import logger, store
 
 
 # base path to the tozti distribution
-TOZTI_BASE = os.path.join(os.path.dirname(__file__), '..')
+TOZTI_BASE = os.path.normpath(os.path.join(os.path.dirname(__file__), '..'))
 
 
 def load_exts(app):
@@ -43,7 +43,8 @@ def load_exts(app):
     .. docs: https://tozti.readthedocs.io/en/latest/dev/arch.html#extensions
     """
 
-    includes = []
+    includes = {}
+    deps = {}
     static_dirs = []
 
     for ext in os.listdir(os.path.join(TOZTI_BASE, 'extensions')):
@@ -71,21 +72,52 @@ def load_exts(app):
             logger.exception(msg.format(ext, err))
             continue
 
+<<<<<<< HEAD
         includes.extend(register(app, ext, **mod.MANIFEST))
+=======
+        new_incs, new_deps = register(app, ext, **mod.MANIFEST)
+        
+        # extensions always depend on the core
+        new_deps.append('core')
+        
+        includes[ext] = new_incs
+        deps[ext] = new_deps
+
+>>>>>>> master
         static_dir = os.path.join(extpath, 'dist')
         if os.path.isdir(static_dir):
             static_dirs.append((ext, static_dir))
 
-    return (includes, static_dirs)
+    logger.info("{}".format(static_dirs))
+    return (includes, static_dirs, deps)
 
 
-def register(app, prefix, **kwargs):
-    """Register routes and run `_god_mode` hook, returns files to include."""
+def topo_sort_includes(includes, deps):
+    """Given includes, a dictionnary of dependencies & includes for each extensions,
+    will construct a list of includes file sorted so that dependencies are respected"""
+   
+    visited = set()
+    def visit(node):
+        visited.add(node)
+        for dep in deps[node]:
+            if not dep in visited:
+                yield from visit(dep)
+        yield from includes[node]
 
-    if 'router' in kwargs:
+    for dep in deps:
+        if not dep in visited:
+            yield from visit(dep)
+
+
+def register(app, prefix, router=None, includes=(), _god_mode=None, dependencies=[], **kwargs):
+    """Register routes and run `_god_mode` hook, returns files to include and dependencies."""
+
+    if router is not None:
         logger.debug('Registering routes `/api/{}/...`'.format(prefix))
-        kwargs['router'].add_prefix('/api/{}'.format(prefix))
-        app.router.add_routes(kwargs['router'])
+        router.add_prefix('/api/{}'.format(prefix))
+        app.router.add_routes(router)
+    if _god_mode is not None:
+        _god_mode(app)
 
     # register handlers
     for sig in ('on_response_prepare', 'on_startup', 'on_cleanup',
@@ -93,16 +125,13 @@ def register(app, prefix, **kwargs):
         if sig in kwargs:
             getattr(app, sig).append(kwargs[sig])
 
-    # mega hook
-    kwargs.get('_god_mode', lambda _: None)(app)
-
-    return ['/static/{}/{}'.format(prefix, i)
-            for i in kwargs.get('includes', [])]
+    return ['/static/{}/{}'.format(prefix, incl) for incl in includes], dependencies
 
 
-def render_index(includes):
+def render_index(includes, deps):
     """Create the index.html file with the right things included."""
 
+    includes = list(topo_sort_includes(includes, deps))
     context = {
         'styles': [{'src': u} for u in includes if u.split('.')[-1] == 'css'],
         'scripts': [{'src': u} for u in includes if u.split('.')[-1] == 'js']
@@ -150,19 +179,27 @@ def main():
 
     # load extensions
     try:
-        includes, statics = load_exts(app)
+        includes, statics, deps = load_exts(app)
     except Exception as err:
         logger.critical('Error during initialization: {}'.format(err))
         sys.exit(1)
 
+    # adding core js dependency
+    statics.append(('core', os.path.join(TOZTI_BASE, 'dist')))
+    includes['core'] = ['static/core/core.js']
+    deps['core'] = []
+
     # deploy static files
     if args.command == 'dev':
         for (name, dir) in statics:
+            logger.info("STATIC {} {}".format(name, dir))
             app.router.add_static('/static/{}'.format(name), dir)
 
+    for resource in app.router.resources():
+        logger.info("ROUTE {}".format(resource))
     # render index.html
     logger.debug('Rendering index.html')
-    index_html = render_index(includes)
+    index_html = render_index(includes, deps)
     if args.command == 'dev':
         async def index_handler(req):
             return web.Response(text=index_html, content_type='text/html',

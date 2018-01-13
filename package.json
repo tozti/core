@@ -1,14 +1,13 @@
 {
-  "name": "core",
+  "name": "tozti",
   "version": "0.0.1",
   "description": "This repository contains the core of the tozti software project. It is licensed under the AGPLv3.",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "webpack --progress --hide-modules"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tozti/core.git"
+    "url": "git+https://github.com/tozti/tozti.git"
   },
   "keywords": [
     "tozti"
@@ -16,10 +15,20 @@
   "author": "",
   "license": "AGPL-3.0",
   "bugs": {
-    "url": "https://github.com/tozti/core/issues"
+    "url": "https://github.com/tozti/tozti/issues"
   },
-  "homepage": "https://github.com/tozti/core#readme",
+  "homepage": "https://github.com/tozti/tozti#readme",
   "devDependencies": {
-    "gulp": "^3.9.1"
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-env": "^1.6.0",
+    "babel-preset-stage-3": "^6.24.1",
+    "css-loader": "^0.28.7",
+    "file-loader": "^1.1.4",
+    "node-sass": "^4.5.3",
+    "sass-loader": "^6.0.6",
+    "vue-loader": "^13.0.5",
+    "vue-template-compiler": "^2.4.4",
+    "webpack": "^3.9.0"
   }
 }
