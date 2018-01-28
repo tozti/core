@@ -181,6 +181,40 @@ def test_storage_rel_toone_owner_patch(tozti, db):
     assert db_contains_object(db, foo)
 
 
+@pytest.mark.extensions("rel02")
+def test_storage_rel_tomany_owner_patch(tozti, db):
+    bar = {"attributes": {"bar": "bar"}}
+    uid_bar = add_object_get_id({"type": "rel02/bar", "attributes": {"bar": "bar"}})
+    bar2 = {"attributes": {"bar": "bar"}}
+    uid_bar2 = add_object_get_id({"type": "rel02/bar", "attributes": {"bar": "bar"}})
+    uid_foo = add_object_get_id({"type": "rel02/foo", "attributes": {"foo": "foo"}, "relationships": {"members": {"data": [{"id": uid_bar}]}}})
+
+    foo = {"attributes": {"foo": "foo"}, "relationships": {"members": [UUID(uid_bar)]}}
+    assert db_contains_object(db, foo)
+
+    result = make_call("PATCH", "/store/resources/{}".format(uid_foo), json={"data": {"relationships": {"members": {"data": [{"id": uid_bar2}]}}}})
+    assert result.status_code == 200
+
+    foo = {"attributes": {"foo": "foo"}, "relationships": {"members": [UUID(uid_bar2)]}}
+    assert db_contains_object(db, foo)
+
+@pytest.mark.extensions("rel02")
+def test_storage_rel_tomany_owner_patch_empty(tozti, db):
+    bar = {"attributes": {"bar": "bar"}}
+    uid_bar = add_object_get_id({"type": "rel02/bar", "attributes": {"bar": "bar"}})
+    uid_foo = add_object_get_id({"type": "rel02/foo", "attributes": {"foo": "foo"}, "relationships": {"members": {"data": [{"id": uid_bar}]}}})
+
+    foo = {"attributes": {"foo": "foo"}, "relationships": {"members": [UUID(uid_bar)]}}
+    assert db_contains_object(db, foo)
+
+    result = make_call("PATCH", "/store/resources/{}".format(uid_foo), json={"data": {"relationships": {"members": {"data": []}}}})
+    assert result.status_code == 200
+
+    foo = {"attributes": {"foo": "foo"}, "relationships": {"members": []}}
+    assert db_contains_object(db, foo)
+
+
+
 @pytest.mark.extensions("rel01")
 def test_storage_rel_toone_get(tozti, db):
     bar = {"attributes": {"bar": "bar"}}
