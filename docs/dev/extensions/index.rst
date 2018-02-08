@@ -1,4 +1,4 @@
-Developping Extensions
+Developing Extensions
 ======================
 
 .. toctree::

@@ -40,7 +40,7 @@ some modules::
 * ``logger`` is a simple utility to pretty print information in the server
   logs.
 
-We define a logger, which will enable us to log informations::
+We define a logger, which will enable us to output useful information to the console::
     
     logger = logbook.Logger("tozti-routing")
 

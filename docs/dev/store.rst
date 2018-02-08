@@ -3,13 +3,13 @@ API
 ***
 
 The tozti core provides an API to perform operations on the database prefixed
-with ``/api/store``. This API is largely inspired by jsonapi_ so you are
+with ``/api/store``. This API is largely inspired by `JSON API`_ so you are
 encouraged to go take a look at their specification.
 
 Error format
 ============
 
-The format of the errors follows `jsonapi errors`_. If a request raised an
+The format of the errors follows `JSON API errors`_. If a request raised an
 error, the server will send back a response with status code ``500``, ``404``
 or ``400``. This response might send back a json object with an entry
 ``errors`` containing a list of json objects with the following properties:
@@ -30,7 +30,7 @@ or ``400``. This response might send back a json object with an entry
     Traceback of the error. This entry might not be present and is included
     only if tozti is launched in dev mode.
 
-Concepts and Datastructures
+Concepts and Data Structures
 ===========================
 
 .. _resource object:
@@ -39,7 +39,7 @@ Resources
 ---------
 
 Resources and `resource objects`_ are the main concept of the store API. A
-resource is what we would call an entity in SQL lang or hypermedia in web lang.
+resource is what we would call an entity in SQL or hypermedia on the web.
 A *resource object* is represented as a json object with the following
 properties:
 
@@ -50,7 +50,7 @@ properties:
    The name of a `type object`_.
 
 ``attributes``
-   An arbitrary JSON object where each attribute is constained by the
+   An arbitrary JSON object where each attribute is constrained by the
    type of the resource.
 
 ``relationships``
@@ -60,7 +60,7 @@ properties:
 ``meta``
    A JSON object containing some metadata about the resource. For now it
    only contains ``created`` and ``last-modified`` which are two
-   self-explanatory dates in ISO 8601 format (UTC timezone).
+   self-explanatory dates in ISO 8601 format (UTC time zone).
 
 
 .. _relationship objects:
@@ -71,7 +71,7 @@ Relationships
 
 A relationship is a way to create a directed and tagged link between two
 resources. Relationships can be *to-one* (resp. *to-many*) in which case
-they link to one (resp. a sequence) of other resources. Practicaly, a
+they link to one (resp. a sequence) of other resources. Practically, a
 *resource object* is a JSON object with the following properties (beware,
 here we diverge a little from the `JSON API spec <jsonapi rel>`_):
 
@@ -179,7 +179,7 @@ up-to-date content.
 Endpoints
 =========
 
-We remind that the api is quite similar to what jsonapi_ proposes.
+We remind that the API is quite similar to what `JSON API`_ proposes.
 In the following section, type ``warrior`` is the type defined as::
 
         'attributes': {
@@ -209,17 +209,17 @@ Fetching an object
 ^^^^^^^^^^^^^^^^^^
 
 To fetch an object, you must execute a ``GET`` request on
-``/api/store/resources/{id}`` where ``id`` is the ``ID`` of the ressource.
+``/api/store/resources/{id}`` where ``id`` is the ``ID`` of the resource.
 
 Error code:
    - ``404`` if ``id`` corresponds to no known objects.
-   - ``400`` if an error occured when processing the object (for exemple, one of the object linked to it doesn't exists anymore in the database).
+   - ``400`` if an error occurred when processing the object (for example, one of the object linked to it doesn't exists anymore in the database).
    - ``200`` if the request was successful.
 
 Returns:
    If the request is successful, the server will send back a `resource object`_ under JSON format.
 
-Exemple:
+Example:
    Suppose that an object of type ``warrior`` and id ``a0d8959e-f053-4bb3-9acc-cec9f73b524e`` exists in the database. Then::
 
         >> GET /api/store/resources/a0d8959e-f053-4bb3-9acc-cec9f73b524e
@@ -273,8 +273,8 @@ To create an object, you must execute a ``POST`` request on
 object you want to send. The object must be encapsulated inside a `data` entry.
 
 Error code:
-    - ``404`` if one of the object targetted by a relationship doesn't exists
-    - ``400`` if an error occured when processing the object. For exemple, if
+    - ``404`` if one of the object targeted by a relationship doesn't exists
+    - ``400`` if an error occurred when processing the object. For example, if
       the json object which was sended is malformated, or if the body of the
       request is not JSON.
     - ``200`` if the request was successful.
@@ -283,7 +283,7 @@ Returns:
     If the request is successful, the server will send back a `resource
     object`_ under JSON format.
 
-Exemple:
+Example:
     Suppose that an object of type ``warrior`` and id
     ``a0d8959e-f053-4bb3-9acc-cec9f73b524e`` exists in the database. Then::
 
@@ -346,7 +346,7 @@ Remark: you don't need to provide every entries.
 
 Error code:
     - ``404`` if ``id`` corresponds to no known objects.
-    - ``400`` if an error occured when processing the object. For exemple, if
+    - ``400`` if an error occurred when processing the object. For example, if
       the json object which was sended is malformated, or if the body of the
       request is not JSON.
     - ``200`` if the request was successful.
@@ -356,7 +356,7 @@ Returns:
     object`_ under JSON format representing the object (after changes are
     applied).
 
-Exemple:
+Example:
     We suppose the object with id ``a0d8959e-f053-4bb3-9acc-cec9f73b524e``
     exists in the database. Then::
 
@@ -411,7 +411,7 @@ Exemple:
 Deleting an object
 ^^^^^^^^^^^^^^^^^^
 
-To delet an object, you must execute a ``DELETE`` request on
+To delete an object, you must execute a ``DELETE`` request on
 ``/api/store/resources/{id}`` where ``id`` is the ID you want to update.
 Remark: you don't need to provide every entries.
 
@@ -423,7 +423,7 @@ Returns:
     If the request is successful, the server will send back an empty JSON
     object.
 
-Exemple:
+Example:
     We suppose the object with id ``a0d8959e-f053-4bb3-9acc-cec9f73b524e``
     exists in the database. Then::
 
@@ -435,28 +435,28 @@ Exemple:
 Relationships
 -------------
 
-In the same way that you can act on ressources, you can also act on
+In the same way that you can act on resources, you can also act on
 relationships.
 
 Fetching a relationship
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 To fetch a relationship, you must execute a ``GET`` request on
-``/api/store/resources/{id}/{rel}`` where ``id`` is the ID of the ressource
+``/api/store/resources/{id}/{rel}`` where ``id`` is the ID of the resource
 possessing the relationship you want to access, and ``rel`` the name of the
 relationship.
 
 Error code:
     - ``404`` if ``id`` corresponds to no known objects or ``rel`` is an
       invalid relationship name.
-    - ``400`` if an error occured when processing the object.
+    - ``400`` if an error occurred when processing the object.
     - ``200`` if the request was successful.
 
 Returns:
     If the request is successful, the server will send back a `relationship
     object`_ under JSON format.
 
-Exemple:
+Example:
     Suppose that an object of type ``warrior`` and id
     ``a0d8959e-f053-4bb3-9acc-cec9f73b524e`` exists in the database. Then::
 
@@ -497,7 +497,7 @@ Updating a relationship
 
 To update a relationship (which is not an automatic relationship), you must
 execute a ``PUT`` request on ``/api/store/resources/{id}/{rel}`` where ``id``
-is the ID of the ressource possessing the relationship you want to access, and
+is the ID of the resource possessing the relationship you want to access, and
 ``rel`` the name of the relationship. The content of your request is a JSON
 object containing:
 
@@ -507,14 +507,14 @@ object containing:
 Error code:
     - ``404`` if ``id`` corresponds to no known objects or ``rel`` is an
       invalid relationship name.
-    - ``400`` if an error occured when processing the object.
+    - ``400`` if an error occurred when processing the object.
     - ``200`` if the request was successful.
 
 Returns:
     If the request is successful, the server will send back a `relationship
     object`_ under JSON format.
 
-Exemple:
+Example:
     Suppose that an object of type ``warrior`` and id
     ``a0d8959e-f053-4bb3-9acc-cec9f73b524e`` exists in the database. We also
     suppose that its relationship ``kitties`` possesses two targets having id
@@ -553,7 +553,7 @@ Adding new targets to a relationship
 
 To add new targets to a ``to-many`` relationship, you must execute a ``POST``
 request on ``/api/store/resources/{id}/{rel}`` where ``id`` is the ID of the
-ressource possessing the relationship you want to access, and ``rel`` the name
+resource possessing the relationship you want to access, and ``rel`` the name
 of the relationship. The content of your request is a JSON object containing
 the ids of the objects you want to add to the relationship.
 
@@ -561,14 +561,14 @@ Error code:
     - ``404`` if ``id`` corresponds to no known objects or ``rel`` is an
       invalid relationship name.
     - ``403`` if the relationship is not a too-many relationship
-    - ``400`` if an error occured when processing the object.
+    - ``400`` if an error occurred when processing the object.
     - ``200`` if the request was successful.
 
 Returns:
     If the request is successful, the server will send back a `relationship
     object`_ under JSON format.
 
-Exemple:
+Example:
     Suppose that an object of type ``warrior`` and id
     ``a0d8959e-f053-4bb3-9acc-cec9f73b524e`` exists in the database. We also
     suppose that its relationship ``kitties`` possesses one targets having id
@@ -600,7 +600,7 @@ Deleting a relationship
 
 To fetch some targets from a ``to-many`` relationship, you must execute a
 ``DELETE`` request on ``/api/store/resources/{id}/{rel}`` where ``id`` is the
-ID of the ressource possessing the relationship you want to access, and ``rel``
+ID of the resource possessing the relationship you want to access, and ``rel``
 the name of the relationship. The content of your request is a JSON object
 containing the ids of the objects you want to remove from the relationship.
 
@@ -608,14 +608,14 @@ Error code:
     - ``404`` if ``id`` corresponds to no known objects or ``rel`` is an
       invalid relationship name.
     - ``403`` if the relationship is not a too-many relationship
-    - ``400`` if an error occured when processing the object.
+    - ``400`` if an error occurred when processing the object.
     - ``200`` if the request was successful.
 
 Returns:
     If the request is successful, the server will send back a `relationship
     object`_ under JSON format.
 
-Exemple:
+Example:
     Suppose that an object of type ``warrior`` and id
     ``a0d8959e-f053-4bb3-9acc-cec9f73b524e`` exists in the database. We also
     suppose that its relationship ``kitties`` possesses three targets having
@@ -646,9 +646,9 @@ Exemple:
             }]
         }
 
-.. _jsonapi: http://jsonapi.org/
+.. _JSON API: http://jsonapi.org/
 .. _resource objects: http://jsonapi.org/format/#document-resource-objects
 .. _UUIDv4: https://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_(random)
 .. _jsonapi rel: http://jsonapi.org/format/#document-resource-object-relationships
 .. _JSON Schema: http://json-schema.org/
-.. _jsonapi errors: http://jsonapi.org/format/#error-objects 
+.. _JSON API errors: http://jsonapi.org/format/#error-objects 

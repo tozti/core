@@ -20,7 +20,7 @@ subfolder of the tozti repository root.
 Directory structure and ``server.py``
 -------------------------------------
 
-An extension is a folder (whoes name will determine the prefix under which the
+An extension is a folder (whose name will determine the prefix under which the
 extension's files are served) containing at least a ``server.py`` file (or
 ``server/__init__.py``). This file must contain a global variable ``MANIFEST``
 that is a dictionary containing the following keys (any one being optional):
@@ -36,7 +36,7 @@ subfolders of `extensions/` and try to load them as an extension.
 ``includes``
    A list of css or js files that must be included in the main ``index.html``.
    Usually you will put there ``"main.js"`` which contains the code to register
-   or patch components. The filepaths must be relative to the ``dist``
+   or patch components. The file paths must be relative to the ``dist``
    subfolder of the extension (see below).
 
 ``_god_mode``
@@ -45,7 +45,7 @@ subfolders of `extensions/` and try to load them as an extension.
    can use it to register custom middlewares or do otherwise weird stuff.
 
 The extension can contain a ``dist`` folder. The content of this folder will
-be served at the url ``/static/<extension-name>``.
+be served at the URL ``/static/<extension-name>``.
 
 Vuejs initialization
 --------------------
