@@ -17,5 +17,6 @@ the *software project* course than the content of the project itself.
    orga
    tests
    tutorials
+   workflow
    sallemachine
    weekly

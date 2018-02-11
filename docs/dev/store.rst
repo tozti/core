@@ -31,7 +31,7 @@ or ``400``. This response might send back a json object with an entry
     only if tozti is launched in dev mode.
 
 Concepts and Data Structures
-===========================
+============================
 
 .. _resource object:
 
