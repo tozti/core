@@ -646,6 +646,51 @@ Example:
             }]
         }
 
+
+Types
+-----
+
+Fetching all instances of a given type
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To fetch all instances of a given type ``<type>``, you must execute a
+``GET`` request on ``/api/store/by-type/<type>``.
+
+Error code:
+    - ``404`` if the type doesn't exists
+    - ``400`` if an error occurred when processing the object.
+    - ``200`` if the request was successful.
+
+Returns:
+    If the request is successful, the server will send back a list of linkage 
+    objects encapsulated under a `data` entry. Each linkage object points toward
+    a ressources having type ``<type>``
+
+Example:
+    To fetch every ``warrior`` present inside our ``store``, you can proceed as
+    following::
+
+        >> GET /api/store/by-type/warrior
+        200
+        {
+            "data": [
+            {
+                "id": "60f1677b-2bbb-4fd9-9a7a-3a20dbf7b5af", 
+                "type": "core/user", 
+                "href": "/api/store/resources/60f1677b-2bbb-4fd9-9a7a-3a20dbf7b5af"
+            }, {
+                "id": "605ab4bc-172b-416e-8a13-186cf3cd1e2e", 
+                "type": "core/user", 
+                "href": "/api/store/resources/605ab4bc-172b-416e-8a13-186cf3cd1e2e"
+            }]
+        }
+
+Remark:
+    Most of the time, type names are under this form: ``<ext-name>/<type-name`` where
+    ``<ext-name>`` is the name of the extension defining the type ``<type-name>``. To 
+    fetch of instances of this type, send a ``GET`` request on ``/api/store/by-type/<ext-name>/<type-name>``.
+
+
 .. _JSON API: http://jsonapi.org/
 .. _resource objects: http://jsonapi.org/format/#document-resource-objects
 .. _UUIDv4: https://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_(random)
