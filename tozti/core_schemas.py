@@ -2,7 +2,7 @@ user_schema = {
     'attributes': {
         'name': { 'type': 'string' },
         'email': { 'type': 'string', 'format': 'email' },
-        'login': { 'type': 'string' },
+        'handle': { 'type': 'string' },
         'avatar': { 'type': 'string' }, # TODO(Lapin0t): upload id
 
         # TODO: config + notif
@@ -25,13 +25,15 @@ user_schema = {
 
 group_schema = {
     'attributes': {
-        'name': { 'type': 'string' }
+        'name': { 'type': 'string' },
+        'handle': { 'type': 'string' },
+        'avatar': { 'type': 'string' },
     },
 
     'relationships': {
         'members': {
             'reverse-of': {
-                'type': 'core/user',
+                'type': ['core/user', 'core/group'],
                 'path': 'groups'
             }
         },
