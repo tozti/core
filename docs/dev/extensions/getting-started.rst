@@ -181,4 +181,5 @@ it in several files. Tozti provide a way to do so. Instead of creating a
 ``server.py`` file, you could create a ``server/`` folder, and inside it write a
 file ``__init__.py`` defining (at least) the ``MANIFEST`` structure.
 
+
 .. _aiohttp server documentation: https://docs.aiohttp.org/en/stable/web.html

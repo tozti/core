@@ -5,3 +5,4 @@ Developing Extensions
    :maxdepth: 1
 
    getting-started
+   jsapi
