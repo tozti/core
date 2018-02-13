@@ -48,18 +48,6 @@ group_schema = {
     }
 }
 
-acl_schema = {
-    'type': 'object',
-    'patternProperties': {
-        '.*': {
-            'type': 'object'
-            'properties': {
-                'type': { 'type': 'string' },
-                'key': { 'type': 'string' },
-            }
-        }
-    }
-}
 
 folder_schema = {
     'attributes': {
@@ -76,51 +64,6 @@ folder_schema = {
                 'path': 'children'
             }
         },
-    }
-}
-
-# core/thread
-thread_schema = {
-    'attributes': {
-        'title': { 'type': 'string' },
-    },
-    'relationships': {
-        'posts': {
-            'arity': 'to-many',
-            'type': 'discussion/post'
-        }
-    }
-}
-
-# core/post
-post_schema = {
-    'attributes': {
-        'title': { 'type': 'string' },
-    },
-
-    'relationships': {
-        'thread': {
-            'reverse-of': {
-                'type': 'discussion/thread',
-                'path': 'posts'
-            }
-        },
-
-        'parent': {
-            'arity': 'to-one',
-            'type': 'discussion/post'
-        },
-
-        'responses': {
-            'reverse-of': {
-                'type': 'discussion/post',
-                'path': 'parent'
-            }
-        },
-
-        'attachments': {
-            'arity': 'to-many'
-        }
     }
 }
 
