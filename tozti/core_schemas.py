@@ -2,14 +2,22 @@ user_schema = {
     'attributes': {
         'name': { 'type': 'string' },
         'email': { 'type': 'string', 'format': 'email' },
-        'login': { 'type': 'string' }
+        'handle': { 'type': 'string' },
+        'avatar': { 'type': 'string' }, # TODO(Lapin0t): upload id
+
+        # TODO: config + notif
     },
+
     'relationships': {
         'groups': {
-            'reverse-of': {
-                'type': 'core/group',
-                'path': 'members'
-            }
+            'arity': 'to-many',
+            'type': 'core/group',
+        },
+
+        # folders the user has made accessible from its sidebar
+        'pinned': {
+            'arity': 'to-many',
+            'type': 'core/folder'
         }
     }
 }
@@ -17,15 +25,53 @@ user_schema = {
 
 group_schema = {
     'attributes': {
-        'name': { 'type': 'string' }
+        'name': { 'type': 'string' },
+        'handle': { 'type': 'string' },
+        'avatar': { 'type': 'string' },
     },
+
     'relationships': {
         'members': {
+            'reverse-of': {
+                'type': ['core/user', 'core/group'],
+                'path': 'groups'
+            }
+        },
+
+        'groups': {
             'arity': 'to-many',
-            'type': 'core/user'
-        }
+            'type': 'core/group',
+        },
+
+        'pinned': {
+            'arity': 'to-many',
+            'type': 'core/folder'
+        },
     }
 }
 
 
-SCHEMAS = {'user': user_schema, 'group': group_schema}
+folder_schema = {
+    'attributes': {
+        'name': { 'type': 'string' }
+    },
+
+    'relationships': {
+        'children': {
+            'arity': 'to-many'
+        },
+        'parents': {
+            'reverse-of': {
+                'type': 'core/folder',
+                'path': 'children'
+            }
+        },
+    }
+}
+
+
+SCHEMAS = {
+    'user': user_schema,
+    'group': group_schema,
+    'folder': folder_schema
+}
