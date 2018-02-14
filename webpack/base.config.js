@@ -30,7 +30,7 @@ module.exports = {
   plugins: [
     new ExtractPlugin('css/[name].css'),
     new CopyWebpackPlugin([
-      { from: 'assets/img/', to: 'dist/img/', }
+      { from: 'assets/img/', to: 'img/', }
     ])
   ],
 
