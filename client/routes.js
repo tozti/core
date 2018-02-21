@@ -8,6 +8,7 @@ import TaxonomyView from './components/views/Taxonomy.vue'
 import Workspaces from './components/views/Workspaces.vue'
 import Groups from './components/views/Groups.vue'
 import GroupView from './components/views/Group.vue'
+import SettingsView from './components/views/Settings.vue'
 
 
 const singleRoutes =
@@ -31,6 +32,8 @@ const enclosedRoutes =
     , component: GroupView
     , props: route => ({ id: route.params.id }) 
     }
+
+  , { path: 'settings', component: SettingsView }
 
   , { path: 'w/', component: Workspaces }
   , { path: 'w/:id',  name: 'workspace', component: SummaryView }

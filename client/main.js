@@ -63,6 +63,7 @@ const tozti = window.tozti = {
   globalMenuItems:
     [ { name: 'Mes groupes', route: '/g/', props: { icon: 'nc-multiple-11' } }
     , { name: 'Mes espaces', route: '/w/', props: { icon: 'nc-grid-45' } }
+    , { name: 'Paramètres', route: '/settings', props: { icon: 'nc-settings-gear-63' } }
   ],
 
   workspaceMenuItems: [

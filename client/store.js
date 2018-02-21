@@ -62,7 +62,7 @@ const store = {
    */
   update(resource) {
     return api
-      .patch(tozti.api.resourceURL(resource.id), resource)
+      .patch(tozti.api.resourceURL(resource.id), { data: resource })
       .then(({ data }) => {
         return store.save(data)
       })
