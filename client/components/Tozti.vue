@@ -1,5 +1,7 @@
 <template>
-  <div>
+  <!-- height 100% to ensure that the space an extension can
+      take is 100% -->
+  <div style="height:100%">
     <header class="main-header">
 
       <section class="branding">
