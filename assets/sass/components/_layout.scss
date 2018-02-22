@@ -11,11 +11,9 @@ $avatar-size: 43px;
 
 html {
 	background: #fcfcfc;
-    height: 100%;
 }
 
 body {
-    height: 100%;
 	padding-top: $header-height + $separator-size;
 }
 
@@ -191,8 +189,6 @@ span.placeholder {
 }
 
 .main-content {
-    height: 100%;
-
 	padding: $content-padding;
 	margin-left: $sidebar-width + $separator-size;
 
@@ -220,6 +216,14 @@ span.placeholder {
       color: #ccc;
     }
   }
+}
+
+.fixed-content {
+	position: fixed;
+	left: $sidebar-width + $separator-size;
+	top: $header-height + $separator-size;
+	right: 0;
+	bottom: 0;
 }
 
 .fixed-width {
