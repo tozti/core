@@ -1,5 +1,5 @@
 ******************************
-Communicating with the storage
+Communication with the storage
 ******************************
 
 More often than not, the purpose of an extension is to define new types of resources,
@@ -66,7 +66,7 @@ Accessing the store from the JS API
 Resources
 ^^^^^^^^^
 
-Now that we registered a new type for resources in the store, we would like to have the ability to interact with such resources. tozti provides a generic API for this end, under the ``tozti.store`` namespace.
+Now that we have registered a new type for resources in the store, we would like to have the ability to interact with such resources. tozti provides a generic API for this end, under the ``tozti.store`` namespace.
 
 
 Getting a resource
@@ -78,7 +78,7 @@ When you have the *uuid* of a resource, you can get its data from the store by u
 
    tozti.store.get(uuid)
 
-This method returns a javascript **promise**, that resolves to the resource object, or rejects to the HTTP response object (allowing you to handle errors with a lot of flexibility).
+This method returns a javascript **promise**, that resolves to the resource object, or rejects to the HTTP response object.
 
 For exemple, assuming the variable ``uuid`` contains the uuid of a resource of type ``dummy-extension/entity``,
 we can print the name of said entity by doing:
@@ -93,6 +93,11 @@ we can print the name of said entity by doing:
      .catch(response => {
        console.error('An error occured while fetching the resource.')
      })
+
+.. danger::
+   You should never write to the resource objects given by the ``tozti.store`` methods, ever.
+   Think of them as readonly objects.
+   If you want to update a resource, see ``tozti.store.update`` introduced below.
 
 
 Creating a new resource
@@ -112,7 +117,7 @@ to the server store. First define a new resource object:
    }
 
 The only required field is the ``type`` field, for the storage to know what you are trying to create.
-Note that the associated ``type`` schema may itself require fields.
+Note that the associated ``type`` schema may itself require you to specify other fields.
 
 Then, you can create the resource and send it to the store with the ``create`` method:
 
@@ -123,8 +128,8 @@ Then, you can create the resource and send it to the store with the ``create`` m
 
 
 This method also returns a javascript **promise**, that resolves to the full store resource object, or rejects to the HTTP response object.
-The resolved resource is a fully defined store resource, so it contains a ``meta`` field with meta informations, and ``attributes`` and ``relationships`` objects in accordance with the resource type.
-It also has an ``id`` field, which contains the uuid of the resource inside the store.
+The resolved resource is a fully defined store resource, so it contains a ``meta`` field with meta information, and ``attributes`` and ``relationships`` objects in accordance with the resource type.
+It also has an ``id`` field, which contains the uuid of the resource inside the remote store.
 
 .. code-block:: javascript
 
@@ -157,7 +162,7 @@ and at the very least an ``id``.
      }
    }
 
-Then, using the ``update`` method tries to apply the changes:
+Then, using the ``update`` method will try to apply the changes to the server:
 
 .. code-block:: javascript
 
@@ -205,20 +210,20 @@ If some resource has a relationship, then in the resource object returned from t
 
 (Recall that a *linkage* is simply an object referring to a resource, containing fields ``type`` and ``id``, plus additional data)
 
-tozti provides helper functions for fetch the entire data of relationships, or updating them, in the ``tozti.store.rels`` namespace.
+tozti provides helper functions for fetching the entire data of a relationship, and updating it, in the ``tozti.store.rels`` namespace.
 
 
 Getting the resources of a relationship
 ---------------------------------------
 
-To get the entirety of the resources pointed by a relationship, use the ``rels.fetch`` method.
+To get all the resources pointed by a relationship, use the ``rels.fetch`` method.
 It takes as a parameter a relationship object coming from some resource object returned by the store,
 and returns a Promise.
 
 This promise either resolves to a single resource object when the relationship is ``to-one``, or to an array of resource objects when the relationship is ``to-many``. 
-This promise is rejected if any of the resources contained in the relationship cannot be accessed from the server.
 
-For this reason, and for a better UX experience, it is preferred to not use ``fetch`` but instead defer the responsability of loading contained resources to individual components, that can display errors more intuitively. (See: part on using the store from vue, to be added)
+This promise is rejected if any of the resources contained in the relationship cannot be accessed from the server.
+For this reason, and for a better UX experience, it is preferred to not use ``fetch`` but instead defer the responsability of loading contained resources to individual components, that can display errors more intuitively. (See: part on using the store from Vue components, further down on the same page)
 
 
 Assume that we have a resource ``resource`` of type ``dummy-extension/entity``, then we can get all resources contained in the ``friends`` relationship by doing:
@@ -241,38 +246,42 @@ Assume that we have a resource ``resource`` of type ``dummy-extension/entity``, 
 Appending resources to a `to-many` relationship
 -----------------------------------------------
 
-``rels.add`` allows you to add some resource to a relationship. It takes a relationship object and a *linkage* as parameters, and returns a promise resolving to the new relationship object.
+``rels.add`` allows you to add some resource to a relationship.
+Its first parameter is a relationship object.
+All the other arguments will be interpreted as linkages to be added to the relationship.
+It returns a promise resolving to the new relationship object.
 Note that the original relationship object is actually mutated to correspond to the new relationship data.
-The linkage provided only requires an ``id`` field.
+The linkages provided only need to define an ``id`` field.
 
-Assuming we have two resources ``pomme`` and ``poire`` of type ``dummy-extensions``,
-adding ``poire`` to the relationship ``friends`` of resource ``pomme`` is done like this:
+Assuming we have two resources ``pomme``, ``poire``, ``abricot`` of type ``dummy-extensions``,
+adding ``poire`` and ``abricot`` to the relationship ``friends`` of resource ``pomme`` is done like this:
 
 .. code-block:: javascript
 
    tozti.store.rels
-     .add(pomme.relationships.friends, { id: poire.id })
+     .add(pomme.relationships.friends, { id: poire.id }, abricot)
 
-If the linkage already exists inside the relationship, it won't be added twice but the promise will still resolve correctly to the relationship object.
+If some linkages already exist inside the relationship, they will not be added twice but the promise will still resolve correctly to the relationship object.
 
 
 Removing resources from a `to-many` relationship
 ------------------------------------------------
 
-``rels.delete`` does the exact opposite of ``rels.add``: it allows you to remove some resource from a relationship.
-It takes a relationship object and the *linkage* to be removed, and returns a promise resolving to the new relationship object.
+``rels.delete`` does the exact opposite of ``rels.add``: it allows you to remove some resources from a relationship.
+It takes a relationship object as first parameter, and any other argument will be interpreted as a linkage.
+It returns a promise resolving to the new relationship object.
 
 Again, the original relationship object is actually mutated to correspond to the new relationship data.
-The linkage provided only requires an `id` field.
+Linkages provided only need to hold an ``id`` field.
 
-Using the same exemple as before, we now want to remove `poire` from the relationship `friends` of resource `pomme`:
+Using the same exemple as before, we now want to remove ``poire`` and ``abricot`` from the relationship ``friends`` of resource ``pomme``:
 
 .. code-block:: javascript
 
    tozti.store.rels
-     .delete(pomme.relationships.friends, { id: poire.id })
+     .delete(pomme.relationships.friends, poire, { id: abricot.id })
 
-If the linkage does not exist inside the relationship, this method will have no effect on the relationship, but the promise will still resolve correctly to the relationship object.
+If some linkages do not exist inside the relationship, they will simply be ignored, and the promise will still resolve correctly to the relationship object.
 
 
 Updating a relationship
@@ -280,3 +289,157 @@ Updating a relationship
 
 Unimplemented yet.
 This will be added soon.
+
+
+
+Accessing data from Vue components
+==================================
+
+A nice feature that was purposefully ignored earlier, is the fact that the JS API keeps a local version of the store.
+What this means is that when someone uses ``tozti.store.get`` with the id of a resource that was already fetched somewhere else, the promise will immediately resolve to **the same cached resource object**.
+
+Likewise, every operation sent to the remote storage will be applied to the cached version of the resource, if it exists. For example, ``tozti.store.update`` will locally mutate the cached target resource to sync with the server version.
+
+This is especially useful in that it enables reactivity without even having to think about it. Simply update a resource and the changes will be seen everywhere the resource is being used, on the frontend, without actually having to request the data from the server again.
+
+Below, we will look at how one can actually use the store API to fetch data inside Vue components.
+
+
+Resource components
+^^^^^^^^^^^^^^^^^^^
+
+Usually, it is good to use specific components to display a single resource. Be it inside a list of items, or a single page displaying information about the resource, working with individual components that care about a single resource at the time is easier to reason about and compose into more involved components.
+
+Let's define a component called ``EntityView`` that will display information about one resource.
+For the component to know which resource it is being associated with, we need to give it an ``id``, through props.
+As soon as the component is being used (i.e mounted), we want the component to fetch the necessary data from the store.
+Finally, as long as the data request is being processed, we simply cannot show any data, so we need to make sure
+that the loading is explicit inside the component.
+
+
+This would give something similar in the vein of:
+
+.. caution::
+   This is given as an exemple,
+   but we would prefer you using ``resourceMixin``, introduced right after.
+
+.. code-block:: html
+
+   <template>
+     <div>
+       <p v-if="resource">
+         Name: {{ resource.attributes.name }} <b>
+         Age:  {{ resource.attributes.name }}
+       </p>
+       <p v-else>
+         The resource is being loaded.
+       </p>
+     </div>
+   </template>
+   <script>
+     export default {
+       props: {
+         id: {
+           type: String
+         }
+       },
+
+       data() {
+         return {
+           resource: null
+         }
+       },
+
+       beforeMounted() {
+         tozti.store.get(this.id)
+           .then(resource => {
+             this.resource = resource
+           })
+       }
+     }
+   </script>
+
+Then the component can be used with ``<entity-view :id="some-resource-id"></entity-view>``.
+
+This should work properly: we query the data when the component is mounted, and conditionally display the content once the resource has been returned.
+However, making this work reliably is more involved, since components can be reused and repurposed freely by Vue.
+
+To make it easier for developers to define this kind of components, we provide a default mixin:
+
+.. code-block:: html
+
+   <template>
+     <div>
+       <p v-if="!loading">
+         Name: {{ resource.attributes.name }} <b>
+         Age:  {{ resource.attributes.name }}
+       </p>
+       <p v-else>
+         The resource is being loaded.
+       </p>
+     </div>
+   </template>
+   <script>
+     import { resourceMixin } from 'tozti'
+     
+     export default {
+       mixins: [ resourceMixin ]
+     }
+   </script>
+
+
+This mixin defines two data fields:
+
+- ``loading``, a boolean that indicates whether a data request is currently being processed.
+- ``resource``, initially set to ``null``, that will contain the resource once it has been acquired.
+
+Use this mixin as soon as it may be suitable!
+
+
+
+Displaying relationships
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Using relationships inside Vue components is quite similar.
+Here we will describe the common patterns related to **to-many** and **to-one** relationships.
+
+
+to-many relationships
+---------------------
+
+When one wants to display the associated resources of some relationship,
+the preferred pattern is to simply display a list of components, that will each be responsible for displaying a single resource of the relationship.
+This allows for fine-grained error handling, when one of the resources no longer exists. In such a situation, the associated component can simply display an error message, without affecting the other components.
+
+To react to relationship changes, you need to add the relationship ``data`` array inside the data of your main component, that will contain every linkage included in the relationship.
+
+In our example, we assume that we are defining a global component, that displays a given ``dummy-extension/entity``'s friends:
+
+.. code-block:: html
+
+   <template>
+     <div v-if="!loading">
+       <entity-view v-for="friend in friends" :id="friend.id" :key="friend.id">
+       </entity-view>
+     </div>
+   </template>
+   <script>
+     import { resourceMixin } from 'tozti'
+     
+     export default {
+       mixins: [ resourceMixin ],
+
+       computed: {
+         friends() {
+           // this.friends will contain an array of linkages
+           // and will be computed when the main resource is finally ready
+           return this.resource.relationships.friends.data
+         }
+       }
+
+     }
+
+   </script>
+
+In this exemple, we defer the responsability of loading individual resources to the ``EntityView`` component defined earlier.
+The relationship data array will be watched by Vue, therefore when the relationship is updated somewhere inside the client, the interface should be updated without needing further work.

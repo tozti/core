@@ -5,6 +5,7 @@ import promiseFinally from 'promise.prototype.finally'
 
 promiseFinally.shim()
 
+export * from './mixins'
 import { addRoutes, getRoutes } from './routes'
 import store from './store'
 import api from './api'
