@@ -2,7 +2,6 @@
 Using Tozti's JS api
 ********************
 
-
 Defining routes on the client side
 ==================================
 
@@ -18,7 +17,9 @@ to define new routes.
 
 Imagine you want to define a new 'page' displaying a component called ``Calendar`` that 
 can be accessed on ``<tozti>/mycalendar``. Then, you must add the following lines in your
-``index.js``::
+``index.js``:
+
+.. code-block:: javascript
 
     tozti.addRoutes([
       { path: '/mycalendar', component: Calendar }
@@ -37,17 +38,21 @@ items that are attached to tozti as a whole, not to a workspace.
 The corresponding method allowing to do that is called ``tozti.addMenuItem``. 
 Here are following examples of usage:
 
-- Adding an item with the text 'item' associated with the route `target/`::
+- Adding an item with the text 'item' associated with the route `target/`:
+
+.. code-block:: javascript
 
     tozti.addMenuItem('item', 'target/')
 
-- Adding an item with the text 'item' associated with the route `target/` 
-  and the icon 'nc-home-52'::
 
-    tozti.addMenuItem('item', 'target/', 
-                      props = {'icon': 'nc-home-52'}
-                      )
+- It is possible to specify which icon to use with the item inside the sidebar.
+  For this, you simply have to give additional properties as a third parameter.
+  The `icon` field should be a CSS class from the Nucleo App Free Icon set.
+  (This might & most surely will change later on).
+  
+.. code-block:: javascript
 
+    tozti.addMenuItem('item', 'target/', {'icon': 'nc-home-52'})
 
 
 .. _getting-started`_: [TODO put link]

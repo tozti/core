@@ -6,3 +6,4 @@ Developing Extensions
 
    getting-started
    jsapi
+   storage
