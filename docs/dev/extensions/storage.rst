@@ -1,6 +1,6 @@
-*****************************
-Comunicating with the storage
-*****************************
+******************************
+Communicating with the storage
+******************************
 
 More often than not, the purpose of an extension is to define new types of resources,
 and provide new interactions with them from the tozti interface.
@@ -16,16 +16,16 @@ For validation purposes, when you want to create a new type of resource in the s
 you need to specify how such a resource is structured.
 This is done via **schemas**, similar to the JSONSchema specification.
 
-New type schemas can be defined from an extension by providing a new entry called `types`
-in the `MANIFEST` of the extension.
+New type schemas can be defined from an extension by providing a new entry called ``types``
+in the ``MANIFEST`` of the extension.
 This entry should be a dictionary, whose keys are the names of the new types, and values are
 valid schemas.
 
 Let's show how this works with a simple example, with our dummy extension.
-We would like to define a new resource type called `entity`, with attributes `name` and `age`.
-For the sake of it, let it also have a `to-many` relationship named `friends`.
+We would like to define a new resource type called ``entity``, with attributes ``name`` and ``age``.
+For the sake of it, let it also have a ``to-many`` relationship named ``friends``.
 
-Therefore, our `MANIFEST` (defined in `server.py`) should look like::
+Therefore, our ``MANIFEST`` (defined in ``server.py``) should look like::
 
   MANIFEST = {
     'types': {
@@ -33,8 +33,8 @@ Therefore, our `MANIFEST` (defined in `server.py`) should look like::
       'entity': {
 
         'attributes': {
-          'name': { type: 'string' },
-          'age': { type: 'number' },
+          'name': { 'type': 'string' },
+          'age': { 'type': 'integer' },
         },
 
         'relationships': {
@@ -51,10 +51,10 @@ Therefore, our `MANIFEST` (defined in `server.py`) should look like::
 
 Note that in the rest of this documentation, extension-defined type names will be prefixed
 by the name of the folder containing the extensions.
-Assuming our extension lives in a folder called `dummy-extension` in the `extensions` folder of
-our main tozti instance, the newly defined type will now be referred as `dummy-extensions/entity`.
-This also applies to the core `types`. For example, we provide by default types `core/user`, and `core/group`.
-That is why in the relationship `friends` of the type we just defined, we refer to `dummy-extensions/entity`.
+Assuming our extension lives in a folder called ``dummy-extension`` in the ``extensions`` folder of
+our main tozti instance, the newly defined type will now be referred as ``dummy-extensions/entity``.
+This also applies to the core ``types``. For example, we provide by default types ``core/user``, and ``core/group``.
+That is why in the relationship ``friends`` of the type we just defined, we refer to ``dummy-extensions/entity``.
 
 Further information on type schemas and how the storage uses them can be found in the documentation specific to the storage. (TODO: add link).
 
@@ -66,23 +66,25 @@ Accessing the store from the JS API
 Resources
 ^^^^^^^^^
 
-Now that we registered a new type for resources in the store, we would like to have the ability to interact with such resources. tozti provides a generic API for this end, under the `tozti.store` namespace.
+Now that we registered a new type for resources in the store, we would like to have the ability to interact with such resources. tozti provides a generic API for this end, under the ``tozti.store`` namespace.
 
 
 Getting a resource
 ------------------
 
-When you have the *uuid* of a resource, you can get its data from the store by using the `get` method:
+When you have the *uuid* of a resource, you can get its data from the store by using the ``get`` method:
 
 .. code-block:: javascript
+
    tozti.store.get(uuid)
 
 This method returns a javascript **promise**, that resolves to the resource object, or rejects to the HTTP response object (allowing you to handle errors with a lot of flexibility).
 
-For exemple, assuming the variable `uuid` contains the uuid of a resource of type `dummy-extension/entity`,
+For exemple, assuming the variable ``uuid`` contains the uuid of a resource of type ``dummy-extension/entity``,
 we can print the name of said entity by doing:
 
 .. code-block:: javascript
+
    tozti.store
      .get(uuid)
      .then(resource => {
@@ -109,10 +111,10 @@ to the server store. First define a new resource object:
      }
    }
 
-The only required field is the `type` field, for the storage to know what you are trying to create.
-Note that the associated `type` schema may itself require fields.
+The only required field is the ``type`` field, for the storage to know what you are trying to create.
+Note that the associated ``type`` schema may itself require fields.
 
-Then, you can create the resource and send it to the store with the `create` method:
+Then, you can create the resource and send it to the store with the ``create`` method:
 
 
 .. code-block:: javascript
@@ -121,8 +123,8 @@ Then, you can create the resource and send it to the store with the `create` met
 
 
 This method also returns a javascript **promise**, that resolves to the full store resource object, or rejects to the HTTP response object.
-The resolved resource is a fully defined store resource, so it contains a `meta` field with meta informations, and `attributes` and `relationships` objects in accordance with the resource type.
-It also has an `id` field, which contains the uuid of the resource inside the store.
+The resolved resource is a fully defined store resource, so it contains a ``meta`` field with meta informations, and ``attributes`` and ``relationships`` objects in accordance with the resource type.
+It also has an ``id`` field, which contains the uuid of the resource inside the store.
 
 .. code-block:: javascript
 
@@ -141,10 +143,10 @@ Updating a resource
 -------------------
 
 Another usual operation is updating an existing resource.
-This is done via the `update` method.
+This is done via the ``update`` method.
 
 First, you need to define a resource object containing only the items that you want to see updated,
-and at the very least an `id`.
+and at the very least an ``id``.
 
 .. code-block:: javascript
 
@@ -155,7 +157,7 @@ and at the very least an `id`.
      }
    }
 
-Then, using the `update` method tries to apply the changes:
+Then, using the ``update`` method tries to apply the changes:
 
 .. code-block:: javascript
 
@@ -180,11 +182,11 @@ Again, this method returns a javascript **promise**, that resolves to the full s
 Deleting a resource
 -------------------
 
-Finaly, to delete a resource from the store, one can use the `delete` method.
-This method takes a resource object as a parameter, whose only needed field is `id`.
+Finaly, to delete a resource from the store, one can use the ``delete`` method.
+This method takes a resource object as a parameter, whose only needed field is ``id``.
 (The fact that it takes a resource object is for convenience only).
 
-Assuming, `uuid` contains some entity id, and `resource` contains a complete resource object coming from the store,
+Assuming, ``uuid`` contains some entity id, and ``resource`` contains a complete resource object coming from the store,
 it can be used like this:
 
 .. code-block:: javascript
@@ -201,25 +203,25 @@ Relationships
 
 If some resource has a relationship, then in the resource object returned from the store, the associated relationship field only contains a *linkage*, or an array of *linkages*.
 
-(Recall that a *linkage* is simply an object referring to a resource, containing fields `type` and `id`, plus additional data)
+(Recall that a *linkage* is simply an object referring to a resource, containing fields ``type`` and ``id``, plus additional data)
 
-tozti provides helper functions for fetch the entire data of relationships, or updating them, in the `tozti.store.rels` namespace.
+tozti provides helper functions for fetch the entire data of relationships, or updating them, in the ``tozti.store.rels`` namespace.
 
 
 Getting the resources of a relationship
 ---------------------------------------
 
-To get the entirety of the resources pointed by a relationship, use the `rels.fetch` method.
+To get the entirety of the resources pointed by a relationship, use the ``rels.fetch`` method.
 It takes as a parameter a relationship object coming from some resource object returned by the store,
 and returns a Promise.
 
-This promise either resolves to a single resource object when the relationship is `to-one`, or to an array of resource objects when the relationship is `to-many`. 
+This promise either resolves to a single resource object when the relationship is ``to-one``, or to an array of resource objects when the relationship is ``to-many``. 
 This promise is rejected if any of the resources contained in the relationship cannot be accessed from the server.
 
-For this reason, and for a better UX experience, it is preferred to not use `fetch` but instead defer the responsability of loading contained resources to individual components, that can display errors more intuitively. (See: part on using the store from vue, to be added)
+For this reason, and for a better UX experience, it is preferred to not use ``fetch`` but instead defer the responsability of loading contained resources to individual components, that can display errors more intuitively. (See: part on using the store from vue, to be added)
 
 
-Assume that we have a resource `resource` of type `dummy-extension/entity`, then we can get all resources contained in the `friends` relationship by doing:
+Assume that we have a resource ``resource`` of type ``dummy-extension/entity``, then we can get all resources contained in the ``friends`` relationship by doing:
 
 .. code-block:: javascript
 
@@ -239,12 +241,12 @@ Assume that we have a resource `resource` of type `dummy-extension/entity`, then
 Appending resources to a `to-many` relationship
 -----------------------------------------------
 
-`rels.add` allows you to add some resource to a relationship. It takes a relationship object and a *linkage* as parameters, and returns a promise resolving to the new relationship object.
+``rels.add`` allows you to add some resource to a relationship. It takes a relationship object and a *linkage* as parameters, and returns a promise resolving to the new relationship object.
 Note that the original relationship object is actually mutated to correspond to the new relationship data.
-The linkage provided only requires an `id` field.
+The linkage provided only requires an ``id`` field.
 
-Assuming we have two resources `pomme` and `poire` of type `dummy-extensions`,
-adding `poire` to the relationship `friends` of resource `pomme` is done like this:
+Assuming we have two resources ``pomme`` and ``poire`` of type ``dummy-extensions``,
+adding ``poire`` to the relationship ``friends`` of resource ``pomme`` is done like this:
 
 .. code-block:: javascript
 
@@ -257,7 +259,7 @@ If the linkage already exists inside the relationship, it won't be added twice b
 Removing resources from a `to-many` relationship
 ------------------------------------------------
 
-`rels.delete` does the exact opposite of `rels.add`: it allows you to remove some resource from a relationship.
+``rels.delete`` does the exact opposite of ``rels.add``: it allows you to remove some resource from a relationship.
 It takes a relationship object and the *linkage* to be removed, and returns a promise resolving to the new relationship object.
 
 Again, the original relationship object is actually mutated to correspond to the new relationship data.
