@@ -4,4 +4,4 @@ foo_schema = {
         'email': { 'type': 'string', 'format': 'email' },
     }
 }
-MANIFEST = {"types": {"foo": foo_schema}}
+MANIFEST = {"name": "type-baddefined01", "types": {"foo": foo_schema}}

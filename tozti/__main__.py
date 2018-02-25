@@ -42,25 +42,25 @@ def find_exts():
 
     .. docs: https://tozti.readthedocs.io/en/latest/dev/arch.html#extensions
     """
-    for ext in os.listdir(os.path.join(tozti.TOZTI_BASE, 'extensions')):
-        extpath = os.path.join(tozti.TOZTI_BASE, 'extensions', ext)
+    for extname in os.listdir(os.path.join(tozti.TOZTI_BASE, 'extensions')):
+        extpath = os.path.join(tozti.TOZTI_BASE, 'extensions', extname)
         if not os.path.isdir(extpath):
             continue
 
-        logger.info('Loading extension {}'.format(ext))
+        logger.info('Loading extension {}'.format(extname))
 
         mod_path = os.path.join(extpath, 'server.py')
         pkg_path = os.path.join(extpath, 'server', '__init__.py')
 
         if os.path.isfile(mod_path):
-            spec = spec_from_file_location(ext, mod_path)
+            spec = spec_from_file_location(extname, mod_path)
         elif os.path.isfile(pkg_path):
-            spec = spec_from_file_location(ext, pkg_path)
+            spec = spec_from_file_location(extname, pkg_path)
         else:
             msg = 'Could not find python file for extension {}'
             # could not use logger.exception as we do not have any exceptions
             # instead we use logger.error
-            logger.error(msg.format(ext))
+            logger.error(msg.format(extname))
             continue
 
         mod = module_from_spec(spec)
@@ -68,17 +68,23 @@ def find_exts():
             spec.loader.exec_module(mod)
         except Exception as err:
             msg = 'Error while loading extension {}, skipping: {}'
-            logger.exception(msg.format(ext, err))
+            logger.exception(msg.format(extname, err))
             continue
 
         try:
             #FIXME: validate the manifest format
             # the manifest format is more or less validated inside of the constructor, 
             # but I agree, it has to be done
-            yield tozti.app.Extension(ext, **mod.MANIFEST)
+
+            if 'name' not in mod.MANIFEST:
+                logger.error('Error while loading extension {}, MANIFEST'
+                             'does not contain the `name`'
+                             'property'.format(extname))
+
+            yield tozti.app.Extension(**mod.MANIFEST)
         except AttributeError:
             logger.exception('Error while loading extension {}, skipping: no '
-                             'MANIFEST found'.format(ext))
+                             'MANIFEST found'.format(extname))
             continue
 
 

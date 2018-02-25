@@ -5,4 +5,4 @@ foo_schema = {
     },
     'relationships': {}
 }
-MANIFEST = {"types": {"foo": foo_schema}}
+MANIFEST = {"name": "type-welldefined01", "types": {"foo": foo_schema}}

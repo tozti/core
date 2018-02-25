@@ -16,4 +16,4 @@ bar_schema = {
         'relationships': {
             }
         }
-MANIFEST = {"types": {"foo": foo_schema, "bar": bar_schema}}
+MANIFEST = {"name": "rel02", "types": {"foo": foo_schema, "bar": bar_schema}}

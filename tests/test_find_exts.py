@@ -26,12 +26,12 @@ def empty_extensions_entry_leave(request):
 
 @pytest.mark.parametrize("extensions",
         [
-            [("foo", Ext_format.SERVER_FILE, {"includes": ["a", "b"]})],
-            [("foo", Ext_format.SERVER_FOLDER, {"includes": ["a", "b"]})],
+            [("foo", Ext_format.SERVER_FILE, {"name": "foo", "includes": ["a", "b"]})],
+            [("foo", Ext_format.SERVER_FOLDER, {"name": "foo", "includes": ["a", "b"]})],
             [("bar", Ext_format.BAD_FORMAT, {})],
             [("foo", Ext_format.SERVER_FILE, None)],
-            [("foo", Ext_format.SERVER_FILE, None), ("bar", Ext_format.SERVER_FILE, {})],
-            [("foo", Ext_format.SERVER_FILE, {}), ("bar", Ext_format.SERVER_FILE, {})],
+            [("foo", Ext_format.SERVER_FILE, None), ("bar", Ext_format.SERVER_FILE, {"name": "bar"})],
+            [("foo", Ext_format.SERVER_FILE, {"name": "foo"}), ("bar", Ext_format.SERVER_FILE, {"name": "bar"})],
         ]
         )
 def test_find_exts(empty_extensions_entry_leave, extensions):
@@ -62,7 +62,7 @@ def test_find_exts(empty_extensions_entry_leave, extensions):
 
     # get the outputed result and the expected result
     output = list(tozti.__main__.find_exts())
-    expected = [tozti.app.Extension(name, **manifest) \
+    expected = [tozti.app.Extension(**manifest) \
             for name, ext_format, manifest in extensions   \
             if not (manifest is None or ext_format == Ext_format.BAD_FORMAT)]
 
