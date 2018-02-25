@@ -2,7 +2,6 @@
 Architecture
 ************
 
-
 Tozti serves 3 main HTTP namespaces:
 
 - ``/static``: usual static files (javascript, css, images, etc)
@@ -17,21 +16,20 @@ The tozti core is really lightweight but it has the ability to load extensions.
 During the startup, the server will search for extensions in the ``extensions``
 subfolder of the tozti repository root.
 
+
 Directory structure and ``server.py``
 -------------------------------------
 
-An extension is a folder (whose name will determine the prefix under which the
-extension's files are served) containing at least a ``server.py`` file (or
-``server/__init__.py``). This file must contain a global variable ``MANIFEST``
-that is a dictionary containing the following keys (any one being optional):
 
 The tozti core is really lightweight but it has the ability to load extensions.
 For now, you only need to know that extension is a folder providing a python
-file (`server.py`), describing how the extension works on the server (its
-routes, which files must be included from the client...).
-An extension can be installed by pasting its folder inside tozti's
-`extensions/` folder. During startup, the server will go through every
-subfolders of `extensions/` and try to load them as an extension.
+file (`server.py` or ``server/__init__.py``), describing how the extension
+works on the server (its routes, which files must be included from the client).
+This file must contain a global variable ``MANIFEST`` that is a dictionary
+containing the following keys (any one being optional):
+
+``name``
+   The name of the extension, in lower-case and with dashes instead of spaces.
 
 ``includes``
    A list of css or js files that must be included in the main ``index.html``.
@@ -46,6 +44,7 @@ subfolders of `extensions/` and try to load them as an extension.
 
 The extension can contain a ``dist`` folder. The content of this folder will
 be served at the URL ``/static/<extension-name>``.
+
 
 Vuejs initialization
 --------------------

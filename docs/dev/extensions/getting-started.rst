@@ -15,7 +15,9 @@ proceed to create a folder ``extension-name``.  The only requirement for
 ``server.py`` declaring a dictionnary ``MANIFEST``.  Thus a minimal definition
 would be like so::
 
-    MANIFEST = {}
+    MANIFEST = {
+      'name': 'extension-name',
+    }
 
 Well done, you've just created your first extension!
 
@@ -70,6 +72,7 @@ just defined. This is where ``MANIFEST`` comes into use: We simply add the
 router in the ``MANIFEST`` dict under the key ``router``::
 
     MANIFEST = {
+        'name': 'extension-name',
         'router': router,
     }
 
@@ -134,6 +137,9 @@ Going further with ``MANIFEST``
 ===============================
 
 Here are a complete list of keys that ``MANIFEST`` can possess:
+
+``name``
+   The name of the extension, in lower-case and with dashes instead of spaces.
 
 ``router``
    This is used to declare new API endpoints. It should be an instance of
