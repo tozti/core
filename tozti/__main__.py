@@ -77,9 +77,9 @@ def find_exts():
             # but I agree, it has to be done
 
             if 'name' not in mod.MANIFEST:
-                logger.error('Error while loading extension {}, MANIFEST'
-                             'does not contain the `name`'
-                             'property'.format(extname))
+                raise ValueError('Error while loading extension {}, MANIFEST'
+                                 'does not contain the `name`'
+                                 'property'.format(extname))
 
             yield tozti.app.Extension(**mod.MANIFEST)
         except AttributeError:
