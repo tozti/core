@@ -13,6 +13,7 @@ before_install:
     - export PATH=$HOME/geckodriver:$PATH
     - geckodriver --version
 install:
+    - SODIUM_INSTALL=system pip install pynacl
     - pip install -r requirements.txt
     - pip install -r requirements-dev.txt
     - npm install
@@ -25,4 +26,4 @@ cache:
         - $HOME/.cache/pip
         - $HOME/.cache/bower
         - $HOME/.npm
-        - "node_modules"
+        - node_modules
