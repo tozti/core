@@ -6,7 +6,7 @@ sudo: required
 services:
     - mongodb
 before_install:
-    - wget https://download.libsodium.org/libsodium/releases/LATEST.tar.gz && tar xzf LATEST.tar.gz && pushd libsodium-stable/ && ./configure --prefix=/usr && make && make check && sudo make install && popd
+    - travis/install_libsodium.sh
     - export GECKODRIVER_DOWNLOAD='https://github.com/mozilla/geckodriver/releases/download/v0.19.1/geckodriver-v0.19.1-linux64.tar.gz'
     - curl -L -o /tmp/geckodriver.tar.gz $GECKODRIVER_DOWNLOAD
     - mkdir $HOME/geckodriver && tar xvf /tmp/geckodriver.tar.gz -C $HOME/geckodriver
