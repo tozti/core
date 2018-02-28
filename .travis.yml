@@ -27,3 +27,4 @@ cache:
         - $HOME/.cache/bower
         - $HOME/.npm
         - node_modules
+        - libsodium
