@@ -3,6 +3,8 @@ import api from './api'
 const storage = new Map()
 const pending = new Map()
 
+const REFRESH_RATE = 1000
+
 const store = {
 
   schemas: {},
@@ -250,6 +252,18 @@ function createProxy(data) {
 function updateProxy(old, update) {
   Object.assign(old, update)
 }
+
+
+// TODO(liautaud):
+//  Remove this, because it is the worst possible implementation of real-time
+//  updates. However, we need something like this until we get have a proper
+//  message queue system -- which we won't have in time for the demo.
+let refreshInterval = setInterval(() => {
+  for (let id of storage.keys()) {
+    let url = api.resourceURL(id)
+    store.fetchResource(url)
+  }
+}, REFRESH_RATE)
 
 
 export default store
