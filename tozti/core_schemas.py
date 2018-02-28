@@ -40,7 +40,8 @@ folder_schema = {
     'body': {
         'name': { 'type': 'string' },
         'children': {
-            'arity': 'to-many'
+            'type': 'relationship',
+            'arity': 'keyed'
         },
 
         'parents': {

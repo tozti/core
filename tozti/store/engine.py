@@ -169,14 +169,22 @@ class Store:
         if key not in schema:
             raise NoItemError(key=key, status=404)
 
-        if not schema[key].is_array:
+        if schema[key].is_array:
+            data = await schema[key].sanitize(raw)
+
+            await self._db.resources.update_one(
+                {'_id': id},
+                {'$addToSet': {'body.%s' % key: {'$each': data}}})
+
+        elif schema[key].is_dict:
+            data = await schema[key].sanitize(raw)
+
+            await self._db.resources.update_one(
+                {'_id': id},
+                {'$set': {'body.%s.%s' % (key, k): v for (k, v) in data.items()}})
+
+        else:
             raise BadItemError('body item {key} is not an array', key=key)
-
-        data = await schema[key].sanitize(raw)
-
-        await self._db.resources.update_one(
-            {'_id': id},
-            {'$addToSet': {'body.%s' % key: {'$each': data}}})
 
     async def item_remove(self, id, key, raw):
         schema = self._types[await self.type_by_id(id)]
@@ -184,15 +192,22 @@ class Store:
         if key not in schema:
             raise NoItemError(key=key, status=404)
 
-        if not schema[key].is_array:
+        if schema[key].is_array:
+            data = await schema[key].sanitize(raw, check_consistency=False)
+
+            await self._db.resources.update_one(
+                {'_id': id},
+                {'$pull': {'body.%s' % key: {'id': {'$in': [UUID(x['id']) for x in data]}}}})
+
+        elif schema[key].is_dict:
+            data = await schema[key].sanitize(raw, check_consistency=False)
+
+            await self._db.resources.update_one(
+                {'_id': id},
+                {'$unset': {'body.%s.%s' % (key, k): '' for k in data}})
+
+        else:
             raise BadItemError('body item {key} is not an array', key=key)
-
-        data = await schema[key].sanitize(raw, check_consistency=False)
-        print(data)
-
-        await self._db.resources.update_one(
-            {'_id': id},
-            {'$pull': {'body.%s' % key: {'id': {'$in': [UUID(x['id']) for x in data]}}}})
 
     async def resources_by_type(self, type):
         logger.debug('Querying type %s' % type)

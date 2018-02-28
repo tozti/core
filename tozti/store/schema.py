@@ -207,6 +207,7 @@ class UploadModel:
         self.writeable = True
         self.is_upload = True
         self.is_array = False
+        self.is_dict = False
 
     async def sanitize(self, data):
         assert False, 'this should not be called'
@@ -229,7 +230,8 @@ class AttributeModel:
 
         self.writeable = True
         self.is_upload = False
-        self.is_array = 'type' in schema and schema['type'] == 'array'
+        self.is_array = False
+        self.is_dict = False
 
     async def sanitize(self, data, check_consistency=True):
         """Verify an attribute value and return it's content."""
@@ -250,7 +252,7 @@ class RelationshipModel:
             {'type': 'object',
              'properties': {
                  'type': {'type': 'string', 'pattern': '^relationship$'},
-                 'arity': {'type': 'string', 'pattern': '^(to-one|to-many)$'},
+                 'arity': {'type': 'string', 'pattern': '^(to-one|to-many|keyed)$'},
                  'targets': {'anyOf': [
                      {'type': 'string'},
                      {'type': 'array', 'items': {'type': 'string'}}]},
@@ -304,13 +306,33 @@ class RelationshipModel:
         'required': ['data'],
     }
 
+    KEYED_SCHEMA = {
+        'type': 'object',
+        'properties': {
+            'data': {
+                'type': 'object',
+                'patternProperties': {
+                    '.*': {
+                        'type': 'object',
+                        'properties': {
+                            'id': { 'type': 'string', 'pattern': '^%s$' % UUID_RE },
+                            'type': { 'type': 'string', 'format': 'uri' },
+                        },
+                        'required': ['id'],
+                    }
+                }
+            },
+        },
+        'required': ['data'],
+    }
+
     def __init__(self, name, schema, *, db):
         try:
             validate(schema, RelationshipModel.META_SCHEMA)
         except ValidationError:
             raise ValueError('invalid schema for relationship %s' % name)
         self.arity = schema['arity']
-        if self.arity in ('to-one', 'to-many'):
+        if self.arity in ('to-one', 'to-many', 'keyed'):
             self.link_model = LinkageModel(schema.get('targets'), db=db)
         else:  # self.arity == 'auto'
             self.pred_type = schema['pred-type']
@@ -322,6 +344,7 @@ class RelationshipModel:
         self.writeable = self.arity != 'auto'
         self.is_upload = False
         self.is_array = self.arity == 'to-many'
+        self.is_dict = self.arity == 'keyed'
 
     async def sanitize(self, data, check_consistency=True):
         """Verify the relationship object and return its internal format."""
@@ -349,6 +372,19 @@ class RelationshipModel:
             else:
                 return [{'id': link['id']} for link in data['data']]
 
+        elif self.arity == 'keyed':
+            try:
+                validate(data, RelationshipModel.KEYED_SCHEMA)
+            except ValidationError as err:
+                raise BadRelError(key=self.name, err=err.message)
+            if check_consistency:
+                links = {}
+                for (k, l) in data['data'].items():
+                    links[k] = await self.link_model.sanitize(l)
+                return links
+            else:
+                return {k: {'id': v['id']} for (k, v) in data['data'].items()}
+
         else:  # self.arity == 'auto'
             raise BadRelError('cannot write automatic relationship {key}',
                               key=self.name)
@@ -367,6 +403,9 @@ class RelationshipModel:
 
         elif self.arity == 'to-many':
             data = [self.link_model.render(l) for l in link]
+
+        elif self.arity == 'keyed':
+            data = {k: self.link_model.render(v) for (k, v) in link.items()}
 
         else:  # self.arity == 'auto'
             cursor = self.db._db.resources.find(
