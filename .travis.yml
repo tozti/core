@@ -2,11 +2,10 @@ language: python
 python:
     - "3.6"
     - "3.5"
-sudo: required
 services:
     - mongodb
 before_install:
-    - travis/install_libsodium.sh
+    - source travis/install_libsodium.sh
     - export GECKODRIVER_DOWNLOAD='https://github.com/mozilla/geckodriver/releases/download/v0.19.1/geckodriver-v0.19.1-linux64.tar.gz'
     - curl -L -o /tmp/geckodriver.tar.gz $GECKODRIVER_DOWNLOAD
     - mkdir $HOME/geckodriver && tar xvf /tmp/geckodriver.tar.gz -C $HOME/geckodriver
@@ -19,7 +18,7 @@ install:
     - npm install
 script:
     - npm run build
-    - pytest tests/ --driver Firefox
+    - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$LIBSODIUM_PREFIX/lib pytest tests/ --driver Firefox
 
 cache:
     directories:
