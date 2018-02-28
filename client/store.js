@@ -262,7 +262,6 @@ let refreshInterval = setInterval(() => {
   for (let id of storage.keys()) {
     let url = api.resourceURL(id)
     store.fetchResource(url)
-    console.log('updating ' + id)
   }
 }, REFRESH_RATE)
 
