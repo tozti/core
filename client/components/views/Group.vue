@@ -1,30 +1,27 @@
 <template>
   <section v-if="resource" class="section content">
     <h1>{{ resource.body.name }}</h1>
-    <p class="grouped">
-      <button class="button" @click="deleteGroup" :disabled="deleting">
-        Supprimer
-      </button>
-    </p>
+
     <div class="tabs">
       <ul>
-        <li class="is-active"><a>Membres <span class="badge">{{ memberCount }}</span></a></li>
+        <li class="is-active"><a>Espace</a></li>
+        <li><a>Membres <span class="badge">{{ memberCount }}</span></a></li>
         <li><a>Paramètres</a></li>
       </ul>
     </div>
-    <div class="group-list">
-      <user-preview v-for="user in members" :key="user.id" :id="user.id"></user-preview>
-    </div>
+
+    <TaxonomyFolderView :id="id"/>
   </section>
 </template>
 
 <script>
+  import { ModalProgrammatic } from 'buefy'
   import { resourceMixin } from '../../mixins'
-  import UserPreview from '../UserPreview.vue'
+  import TaxonomyFolderView from './TaxonomyFolderView'
 
   export default {
     mixins: [ resourceMixin ],
-    components: { UserPreview },
+    components: { TaxonomyFolderView },
 
     data() {
       return {
@@ -34,7 +31,7 @@
 
     computed: {
       members() {
-        return this.resource.relationships.members.data
+        return this.resource.body.members.data
       },
 
       memberCount() {
@@ -43,6 +40,9 @@
     },
 
     methods: {
+      createWorkspace() {
+      },
+
       deleteGroup() {
         this.$dialog.confirm({
           message: 'Voulez-vous supprimer définitivement ce groupe ?',
@@ -54,6 +54,7 @@
 
             tozti.store
               .rels.delete(tozti.me.body.groups, { id: this.id })
+              .then(() => tozti.store.rels.delete(tozti.me.body.pinned, { id: this.id }))
               .then(() => tozti.store.delete(this.id))
               .then(() => {
                 this.$router.push('/g/')

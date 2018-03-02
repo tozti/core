@@ -6,9 +6,9 @@
       </p>
       <div class="box">
         <form v-on:submit.prevent="signin">
-          <b-field label-for="handle" label="Identifiant :">
-            <b-input ref="handle" id="handle" v-model="user.handle"></b-input>
-          </b-field>
+          <t-handle-field v-model="user.handle"
+                          :available.sync="available">
+          </t-handle-field>
 
           <b-field label-for="mail" label="Adresse mail :">
             <b-input id="mail" type="mail" v-model="user.email"></b-input>
@@ -24,7 +24,7 @@
 
           <div class="field is-grouped is-grouped-left">
             <p class="control">
-              <button type="submit" class="button">
+              <button type="submit" class="button" :disabled="!available">
                 S'enregistrer
               </button>
             </p>
@@ -44,12 +44,13 @@
           name: '',
           passwd: '',
           email: '',
-        }
+        },
+        available: false
       }
     },
 
     mounted() {
-      this.$refs.handle.focus()
+      // this.$refs.handle.focus()
     },
 
     methods: {

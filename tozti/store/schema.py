@@ -64,7 +64,7 @@ class Schema:
                     'body': {'type': 'object'},
                 },
                 'required': ['body'],
-                'additionalProperties': True, #possible security problem
+                'additionalProperties': True,  # possible security problem
             },
         },
         'additionalProperties': False,
@@ -110,7 +110,8 @@ class Schema:
 
         # check that all and only these attributes are present
         sub1 = data['body'].keys() - self._defs.keys()
-        sub2 = {k for (k, v) in self._defs.items() if v.writeable and k not in self._optional} - data['body'].keys()
+        sub2 = {k for (k, v) in self._defs.items(
+        ) if v.writeable and k not in self._optional} - data['body'].keys()
         if len(sub1) > 0:
             raise NoItemError(key=sub1.pop())
         if is_create and len(sub2) > 0:
@@ -137,12 +138,19 @@ class Schema:
         for (key, schema) in self._defs.items():
             body[key] = await schema.render(id, rep['body'].get(key))
 
+        meta = {'created': rep['meta']['created'].isoformat() + 'Z',
+                'last-modified': rep['meta']['last-modified'].isoformat() + 'Z'}
+        if 'handle' in rep:
+            meta['handle'] = rep['handle']
+        if 'author' in rep['meta']:
+            meta['author-id'] = rep['meta']['author']
+
         return {'id': id,
                 'href': fmt_resource_url(id),
                 'type': rep['type'],
                 'body': body,
-                'meta': {'created': rep['created'],
-                         'last-modified': rep['last-modified']}}
+                'meta': meta
+                }
 
     def __getitem__(self, key):
         if key not in self._defs:
@@ -173,7 +181,7 @@ class LinkageModel:
             type_url = await self.db.type_by_id(target)
         except NoResourceError:
             raise BadRelError('linked resource %s does not exist' % target)
-        #FIXME: this error leaks type information, check if user can read
+        # FIXME: this error leaks type information, check if user can read
         # linked resource first
         if 'type' in linkage and linkage['type'] != type_url:
             raise BadRelError('mismatched type for linked resource {target}: '
@@ -207,13 +215,13 @@ class UploadModel:
         self.writeable = True
         self.is_upload = True
         self.is_array = False
+        self.is_dict = False
 
     async def sanitize(self, data):
         assert False, 'this should not be called'
 
     async def render(self, id, data):
         return data
-
 
 
 class AttributeModel:
@@ -229,7 +237,8 @@ class AttributeModel:
 
         self.writeable = True
         self.is_upload = False
-        self.is_array = 'type' in schema and schema['type'] == 'array'
+        self.is_array = False
+        self.is_dict = False
 
     async def sanitize(self, data, check_consistency=True):
         """Verify an attribute value and return it's content."""
@@ -250,7 +259,7 @@ class RelationshipModel:
             {'type': 'object',
              'properties': {
                  'type': {'type': 'string', 'pattern': '^relationship$'},
-                 'arity': {'type': 'string', 'pattern': '^(to-one|to-many)$'},
+                 'arity': {'type': 'string', 'pattern': '^(to-one|to-many|keyed)$'},
                  'targets': {'anyOf': [
                      {'type': 'string'},
                      {'type': 'array', 'items': {'type': 'string'}}]},
@@ -277,8 +286,8 @@ class RelationshipModel:
             'data': {
                 'type': 'object',
                 'properties': {
-                    'id': { 'type': 'string', 'pattern': '^%s$' % UUID_RE },
-                    'type': { 'type': 'string', 'format': 'uri' },
+                    'id': {'type': 'string', 'pattern': '^%s$' % UUID_RE},
+                    'type': {'type': 'string', 'format': 'uri'},
                 },
                 'required': ['id'],
             },
@@ -294,11 +303,31 @@ class RelationshipModel:
                 'items': {
                     'type': 'object',
                     'properties': {
-                        'id': { 'type': 'string', 'pattern': '^%s$' % UUID_RE },
-                        'type': { 'type': 'string', 'format': 'uri' },
+                        'id': {'type': 'string', 'pattern': '^%s$' % UUID_RE},
+                        'type': {'type': 'string', 'format': 'uri'},
                     },
                     'required': ['id'],
                 },
+            },
+        },
+        'required': ['data'],
+    }
+
+    KEYED_SCHEMA = {
+        'type': 'object',
+        'properties': {
+            'data': {
+                'type': 'object',
+                'patternProperties': {
+                    '.*': {
+                        'type': 'object',
+                        'properties': {
+                            'id': { 'type': 'string', 'pattern': '^%s$' % UUID_RE },
+                            'type': { 'type': 'string', 'format': 'uri' },
+                        },
+                        'required': ['id'],
+                    }
+                }
             },
         },
         'required': ['data'],
@@ -310,7 +339,7 @@ class RelationshipModel:
         except ValidationError:
             raise ValueError('invalid schema for relationship %s' % name)
         self.arity = schema['arity']
-        if self.arity in ('to-one', 'to-many'):
+        if self.arity in ('to-one', 'to-many', 'keyed'):
             self.link_model = LinkageModel(schema.get('targets'), db=db)
         else:  # self.arity == 'auto'
             self.pred_type = schema['pred-type']
@@ -322,6 +351,7 @@ class RelationshipModel:
         self.writeable = self.arity != 'auto'
         self.is_upload = False
         self.is_array = self.arity == 'to-many'
+        self.is_dict = self.arity == 'keyed'
 
     async def sanitize(self, data, check_consistency=True):
         """Verify the relationship object and return its internal format."""
@@ -349,6 +379,19 @@ class RelationshipModel:
             else:
                 return [{'id': link['id']} for link in data['data']]
 
+        elif self.arity == 'keyed':
+            try:
+                validate(data, RelationshipModel.KEYED_SCHEMA)
+            except ValidationError as err:
+                raise BadRelError(key=self.name, err=err.message)
+            if check_consistency:
+                links = {}
+                for (k, l) in data['data'].items():
+                    links[k] = await self.link_model.sanitize(l)
+                return links
+            else:
+                return {k: {'id': v['id']} for (k, v) in data['data'].items()}
+
         else:  # self.arity == 'auto'
             raise BadRelError('cannot write automatic relationship {key}',
                               key=self.name)
@@ -367,6 +410,9 @@ class RelationshipModel:
 
         elif self.arity == 'to-many':
             data = [self.link_model.render(l) for l in link]
+
+        elif self.arity == 'keyed':
+            data = {k: self.link_model.render(v) for (k, v) in link.items()}
 
         else:  # self.arity == 'auto'
             cursor = self.db._db.resources.find(

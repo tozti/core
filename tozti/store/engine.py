@@ -25,7 +25,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 from tozti.store import logger, NoResourceError, NoTypeError, BadItemError, NoItemError, NoHandleError, HandleExistsError
 from tozti.store.schema import Schema, fmt_resource_url
-from tozti.utils import BadDataError, ValidationError, validate, NotAcceptableError
+from tozti.utils import BadDataError, ValidationError, validate, NotAcceptableError, current_time
 
 from tozti.auth.utils import LoginUnknown as LoginUnknown
 
@@ -52,6 +52,11 @@ class Store:
         res = await self._db.resources.find_one({'_id': id}, projection=projection)
         if res is None:
             raise NoResourceError(id=id)
+
+        handle = await self._db.handles.find_one({'target': id})
+        if handle is not None:
+            res['handle'] = handle['_id']
+
         return res
 
     async def type_by_id(self, id):
@@ -65,7 +70,7 @@ class Store:
         res = await self.resource_by_id(id, {'type': 1})
         return res['type']
 
-    async def create(self, raw):
+    async def create(self, raw, user=None):
         """Create a new resource and return it's rendered form.
 
         The passed data must be the content of the request as specified by
@@ -83,9 +88,15 @@ class Store:
 
         data = await schema.sanitize(raw)
         data['_id'] = uuid4()
-        current_time = datetime.utcnow().replace(microsecond=0)
-        data['created'] = current_time
-        data['last-modified'] = current_time
+
+        time = current_time()
+        data['meta'] = {
+            'created': time,
+            'last-modified': time
+        }
+        if user is not None:
+            data['meta']['author'] = user
+
         await self._db.resources.insert_one(data)
 
         return await schema.render(data)
@@ -113,6 +124,7 @@ class Store:
         schema = self._types[await self.type_by_id(id)]
         data = await schema.sanitize(raw, is_create=False)
         if len(data) > 0:
+            data['meta.last-modified'] = current_time()
             await self._db.resources.update_one({'_id': id}, {'$set': data})
 
     async def delete(self, id):
@@ -161,7 +173,8 @@ class Store:
 
         await self._db.resources.update_one(
             {'_id': id},
-            {'$set': {'body.%s' % rel: fmt_upload_url(blob_id)}})
+            {'$set': {'body.%s' % rel: fmt_upload_url(blob_id),
+                      'meta.last-modified': current_time()}})
 
     async def item_append(self, id, key, raw):
         schema = self._types[await self.type_by_id(id)]
@@ -169,14 +182,24 @@ class Store:
         if key not in schema:
             raise NoItemError(key=key, status=404)
 
-        if not schema[key].is_array:
+        if schema[key].is_array:
+            data = await schema[key].sanitize(raw)
+
+            await self._db.resources.update_one(
+                {'_id': id},
+                {'$addToSet': {'body.%s' % key: {'$each': data}},
+                 '$set': {'meta.last-modified': current_time()}})
+
+        elif schema[key].is_dict:
+            data = await schema[key].sanitize(raw)
+
+            await self._db.resources.update_one(
+                {'_id': id},
+                {'$set': {**{'body.%s.%s' % (key, k): v for (k, v) in data.items()},
+                          'meta.last-modified': current_time()}})
+
+        else:
             raise BadItemError('body item {key} is not an array', key=key)
-
-        data = await schema[key].sanitize(raw)
-
-        await self._db.resources.update_one(
-            {'_id': id},
-            {'$addToSet': {'body.%s' % key: {'$each': data}}})
 
     async def item_remove(self, id, key, raw):
         schema = self._types[await self.type_by_id(id)]
@@ -184,15 +207,24 @@ class Store:
         if key not in schema:
             raise NoItemError(key=key, status=404)
 
-        if not schema[key].is_array:
+        if schema[key].is_array:
+            data = await schema[key].sanitize(raw, check_consistency=False)
+
+            await self._db.resources.update_one(
+                {'_id': id},
+                {'$pull': {'body.%s' % key: {'id': {'$in': [UUID(x['id']) for x in data]}}},
+                 '$set': {'meta.last-modified': current_time()}})
+
+        elif schema[key].is_dict:
+            data = await schema[key].sanitize(raw, check_consistency=False)
+
+            await self._db.resources.update_one(
+                {'_id': id},
+                {'$unset': {'body.%s.%s' % (key, k): '' for k in data},
+                 '$set': {'meta.last-modified': current_time()}})
+
+        else:
             raise BadItemError('body item {key} is not an array', key=key)
-
-        data = await schema[key].sanitize(raw, check_consistency=False)
-        print(data)
-
-        await self._db.resources.update_one(
-            {'_id': id},
-            {'$pull': {'body.%s' % key: {'id': {'$in': [UUID(x['id']) for x in data]}}}})
 
     async def resources_by_type(self, type):
         logger.debug('Querying type %s' % type)
@@ -222,7 +254,7 @@ class Store:
             id = UUID(raw['data']['id'])
         except:
             raise BadDataError()
-        
+
         if not allow_overwrite and (await self._db.handles.find({'_id': handle}).count()) > 0:
             raise HandleExistsError(handle)
         await self.handle_set_id(handle, id)
@@ -231,7 +263,7 @@ class Store:
         type = await self.type_by_id(id)
         await self._db.handles.update_one(
             {'_id': handle},
-            {'$set': {'target':id, 'type':type}},
+            {'$set': {'target': id, 'type': type}},
             upsert=True)
 
     async def handle_delete(self, handle):

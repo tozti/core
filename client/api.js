@@ -13,13 +13,15 @@ API.endpoints = {
   me: `${API.prefix}/auth/me`,
   login: `${API.prefix}/auth/login`,
   signup: `${API.prefix}/auth/signup`,
+  handle: `${API.prefix}/store/by-handle`,
 }
 
 API.resourceURL = id => `${API.endpoints.resources}/${id}`
+API.handleURL = handle => `${API.endpoints.handle}/${handle}`
 API.typeURL = type => `${API.endpoints.types}/${type}`
 
 const config = {
-  mode: 'same-origin',
+  mode: 'cors',
 
   // allow the request to send & receive cookies
   credentials: 'same-origin',
@@ -67,6 +69,15 @@ API.delete = (url, data = {}) => {
 API.get = url => {
   const conf = Object.assign({}, config, { method: 'GET' })
   return request(url, conf)
+}
+
+API.checkHandle = handle => {
+  return API
+    .get(API.handleURL(handle))
+    .then(
+      () => Promise.reject(),
+      res => res.status == 404 ? res : Promise.reject()
+    )
 }
 
 export default API

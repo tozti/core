@@ -21,17 +21,17 @@ user_schema = {
 
 group_schema = {
     'body': {
-        'name': {
-            'type': 'string'
-        },
-        'handle' : {
-            'type': 'string'
-        },
+        'name': { 'type': 'string' },
+        'handle' : { 'type': 'string' },
         'members': {
             'type': 'relationship',
             'arity': 'auto',
             'pred-type': 'core/user',
             'pred-relationship': 'groups'
+        },
+        'children': {
+            'type': 'relationship',
+            'arity': 'keyed'
         }
     }
 }
@@ -39,10 +39,11 @@ group_schema = {
 folder_schema = {
     'body': {
         'name': { 'type': 'string' },
+        'handle': { 'type': 'string' },
         'children': {
-            'arity': 'to-many'
+            'type': 'relationship',
+            'arity': 'keyed'
         },
-
         'parents': {
             'type': 'relationship',
             'arity': 'auto',

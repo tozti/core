@@ -1,5 +1,7 @@
 import Vue from 'vue'
 import Buefy from 'buefy'
+import Timeago from 'vue-timeago'
+
 import ToztiLayout from './components/Tozti.vue'
 import promiseFinally from 'promise.prototype.finally'
 
@@ -7,12 +9,36 @@ promiseFinally.shim()
 
 import { resourceMixin } from './mixins'
 import { addRoutes, getRoutes } from './routes'
+import { addTaxonomyItem, TaxonomyItemComponent } from './components/views/TaxonomyFolderView'
 import store from './store'
 import api from './api'
 
-import AppView from './components/App.vue'
+import AppView from './components/App'
+import HandleInput from './components/generic/HandleInput'
+import TaxonomyItem from './components/generic/TaxonomyItem'
+import NewResourceForm from './components/generic/NewResourceForm'
 
 Vue.use(Buefy)
+Vue.use(Timeago, {
+    name: 'timeago',
+    locale: 'fr-FR',
+    locales: {
+        'fr-FR': require('vue-timeago/locales/fr-FR.json')
+    }
+})
+
+Vue.component('t-handle-field', HandleInput)
+Vue.component('t-taxonomy-item', TaxonomyItem)
+Vue.component('t-new-resource-form', NewResourceForm)
+
+import GroupItem from './components/views/TaxonomyGroupItem'
+import FolderItem from './components/views/TaxonomyFolderItem'
+
+import GroupView from './components/views/Group.vue'
+import FolderView from './components/views/FolderView.vue'
+
+import NewFolderForm from './components/NewFolderForm'
+
 
 // Create a 'polymorphic' component.
 // A polymorphic component is a component with a single prop `resource` that
@@ -55,6 +81,10 @@ export function polymorphic_component(name, fallback) {
 
 const tozti = window.tozti = {
   resourceMixin,
+
+  addTaxonomyItem,
+  TaxonomyItemComponent,
+
   addRoutes,
   store,
   api,
@@ -64,14 +94,29 @@ const tozti = window.tozti = {
 
   globalMenuItems:
     [ { name: 'Mes groupes', route: '/g/', props: { icon: 'nc-multiple-11' } }
-    , { name: 'Mes espaces', route: '/w/', props: { icon: 'nc-grid-45' } }
     , { name: 'Paramètres', route: '/settings', props: { icon: 'nc-settings-gear-63' } }
-  ],
+    ],
 
-  workspaceMenuItems: [
-    { name: 'Résumé', route: 'workspace', props: { icon: 'nc-eye-19' } }
-  ],
+  workspaceMenuItems: [],
 
+  resourceTypes: [],
+
+  taxonomyItems: new Map(
+    [ ['core/group', GroupItem]
+    , ['core/folder', FolderItem]
+    ]
+  ),
+
+  taxonomyViews: new Map(
+    [ ['core/group', GroupView]
+    , ['core/folder', FolderView]
+    ]
+  ),
+
+  creationForms: new Map(
+    [ ['core/folder', NewFolderForm]
+    ]
+  ),
 
   /**
    * Define a global sidebar menu item.
@@ -94,6 +139,22 @@ const tozti = window.tozti = {
 
 
   /**
+   * @param {string} type         - The type of resource to register (e.g. `discussion/thread`).
+   * @param {string} name         - The lowercase name of the resource (e.g. `discussion`).
+   * @param {string} name         - The gender of `name`. Must be either 'm' or 'f'.
+   * @param {string} taxonomyItem - The component responsible for listing this resource type.
+   * @param {string} taxonomyView - The component responsible for displaying this resource type.
+   * @param {string} creationForm - The component responsible for creating this resource type.
+   */
+  addResourceType(type, name, gender, taxonomyItem, taxonomyView, creationForm) {
+    tozti.resourceTypes.push({ type, name, gender })
+    tozti.taxonomyItems.set(type, taxonomyItem)
+    tozti.taxonomyViews.set(type, taxonomyView)
+    tozti.creationForms.set(type, creationForm)
+  },
+
+
+  /**
    * Start the tozti web app.
    */
   launch() {
@@ -111,6 +172,4 @@ const tozti = window.tozti = {
 
 }
 
-
 export default tozti
-

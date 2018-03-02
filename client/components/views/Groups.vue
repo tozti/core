@@ -10,7 +10,9 @@
       <h1>Mes groupes</h1>
       <p><a class="button" @click="displayForm">Nouveau groupe</a></p>
       <div class="group-list">
-        <group-preview v-for="group in groups" :key="group.id" :id="group.id"></group-preview>
+        <transition-group name="zoomIn" tag="div">
+          <group-preview v-for="group in groups" :key="group.id" :id="group.id"></group-preview>
+        </transition-group>
       </div>
     </div>
   </section>

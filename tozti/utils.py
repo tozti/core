@@ -170,6 +170,10 @@ def validate(inst, schema):
                                format_checker=jsonschema.FormatChecker())
 
 
+def current_time():
+    return datetime.utcnow().replace(microsecond=0)
+
+
 class ConfigError(Exception):
     pass
 

@@ -1,14 +1,13 @@
-import LoginView from './components/Login.vue'
-import SignUpView from './components/SignUp.vue'
-import ToztiLayout from './components/Tozti.vue'
-import DashboardView from './components/views/Dashboard.vue'
-import SummaryView from './components/views/Summary.vue'
-import TaxonomyView from './components/views/Taxonomy.vue'
+import ToztiLayout from './components/Tozti'
 
-import Workspaces from './components/views/Workspaces.vue'
-import Groups from './components/views/Groups.vue'
-import GroupView from './components/views/Group.vue'
-import SettingsView from './components/views/Settings.vue'
+import LoginView from './components/Login'
+import SignUpView from './components/SignUp'
+
+import Workspaces from './components/views/Workspaces'
+import Groups from './components/views/Groups'
+import GroupView from './components/views/Group'
+import SettingsView from './components/views/Settings'
+import TaxonomyView from './components/views/TaxonomyView'
 
 
 const singleRoutes =
@@ -25,19 +24,14 @@ const singleRoutes =
 
 
 const enclosedRoutes =
-  [ { path: 'g/', component: Groups }
+  [ { path: 'g', component: Groups }
 
-  , { name: 'group'
-    , path: 'g/:id'
-    , component: GroupView
-    , props: route => ({ id: route.params.id }) 
-    }
+  , { name: 'taxonomy', path: 't/:taxonomy+', component: TaxonomyView }
 
   , { path: 'settings', component: SettingsView }
 
+
   , { path: 'w/', component: Workspaces }
-  , { path: 'w/:id',  name: 'workspace', component: SummaryView }
-  , { path: 'w/:taxonomy+', component: TaxonomyView, props: true }
   ]
 
 

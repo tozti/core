@@ -1,24 +1,7 @@
 <template>
   <div>
-    <header class="main-header">
-
-      <section class="branding">
-        <router-link to="/">
-          <img src="~assets/img/logo.svg" alt="tozti">
-        </router-link>
-      </section>
-
-      <search-bar></search-bar>
-
-      <section class="user">
-        <notification-center></notification-center>
-        <user-info></user-info>
-
-      </section>
-    </header>
-
-    <navigation></navigation>
-
+    <tozti-header></tozti-header>
+    <tozti-sidebar></tozti-sidebar>
     <main class="main-content">
       <router-view></router-view>
     </main>
@@ -26,17 +9,10 @@
 </template>
 
 <script>
-  import NotificationCenter from './NotificationCenter.vue'
-  import SearchBar from './SearchBar.vue'
-  import Navigation from './Navigation.vue'
-  import UserInfo from './UserInfo.vue'
+  import ToztiHeader from './Header'
+  import ToztiSidebar from './Sidebar'
 
   export default {
-    components: {
-      NotificationCenter,
-      Navigation,
-      SearchBar,
-      UserInfo,
-    }
+    components: { ToztiHeader, ToztiSidebar }
   }
 </script>

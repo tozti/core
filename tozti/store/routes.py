@@ -55,7 +55,7 @@ async def resources_post(req):
     """Request handler for ``POST /api/store/resources``."""
 
     data = await get_json_from_request(req)
-    resource = await req.app['tozti-store'].create(data)
+    resource = await req.app['tozti-store'].create(data, req['user'])
     return json_response({'data': resource})
 
 
@@ -184,12 +184,13 @@ async def by_handle_put(req):
 @by_handle.delete
 async def by_handle_delete(req):
     """Request handler for ``PUT /by-handle/{handle}``."""
-    
+
     handle = req.match_info['handle']
     store = req.app['tozti-store']
     await store.handle_delete(handle)
 
     return json_response({})
+
 
 async def open_db(app, types):
     """Initialize storage backend at app startup."""

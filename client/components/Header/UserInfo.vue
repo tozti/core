@@ -1,8 +1,13 @@
 <template>
   <div href="#" class="logged">
+    <div class="avatar">
+      <img :src="'https://identicon-api.herokuapp.com/' + me.body.name + '/64?format=png'">
+    </div>
+
     {{ me.body.name }} 
-    <b-icon icon="chevron-down" size="is-small"></b-icon>
-    <a v-on:click="logout"><b-icon icon="power"></b-icon></a>
+
+    <i class="material-icons">arrow_drop_down</i>
+    <a v-on:click="logout" style="margin-left: 10px;"><b-icon icon="power"></b-icon></a>
   </div>
 </template>
 

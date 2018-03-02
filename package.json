@@ -22,7 +22,8 @@
   "homepage": "https://github.com/tozti/tozti#readme",
   "dependencies": {
     "buefy": "^0.6.3",
-    "promise.prototype.finally": "^3.1.0"
+    "promise.prototype.finally": "^3.1.0",
+    "vue-timeago": "^3.4.4"
   },
   "devDependencies": {
     "copy-webpack-plugin": "^4.4.1",
